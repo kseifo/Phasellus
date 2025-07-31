@@ -1,7 +1,7 @@
 local Player = {}
 Player.__index = Player
 
--- Turn semantics here - needs completion
+-- Turn semantics here
 function Player:playTurn()
     print(self.name .. "'s turn.")
 end
