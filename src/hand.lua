@@ -46,4 +46,18 @@ function hand:sumAllDice()
     return total
 end
 
+function hand:moveToReroll(index)
+    if index >= 1 and index <= #self.hold then
+        local die = table.remove(self.hold, index)
+        table.insert(self.reroll, die)
+    end
+end
+
+function hand:moveToHold(index)
+    if index >= 1 and index <= #self.reroll then
+        local die = table.remove(self.reroll, index)
+        table.insert(self.hold, die)
+    end
+end
+
 return hand
