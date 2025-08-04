@@ -36,4 +36,14 @@ function hand:getAllDice()
     return allDice
 end
 
+function hand:sumAllDice()
+    local allDice = self:getAllDice()
+    local total = 0 
+
+    for _, die in ipairs(allDice) do
+        total = total + die:getValue()
+    end
+    return total
+end
+
 return hand
