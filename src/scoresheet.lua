@@ -58,14 +58,14 @@ function Scoresheet:hasFullHouse(hand)
     local hasThree = false
     local hasTwo = false
 
-    for _, v in ipairs(count) do
+    for _, v in pairs(count) do
         if v == 3 then
             hasThree = true
         elseif v == 2 then
             hasTwo = true
         end
     end
-
+    
     return hasThree and hasTwo and 25 or 0
 end
 
@@ -103,19 +103,12 @@ function Scoresheet:hasStraight(hand, length)
     return 0
 end
 
--- Calculating the score for Chance (the sum)
+-- Calculating the score for Chance (the sum of all dice)
 function Scoresheet:calculateChance(hand)
-    local dice = hand:getAllDice()
-    local total = 0
-
-    for _, die in ipairs(dice) do
-        total = total + die:getValue()
-    end
-
-    return total
+    return hand:sumAllDice()
 end
 
-function Scoresheet:calculateScore(hand, category)
+function Scoresheet:setScore(hand, category)
     if self.scores[category] ~= nil then
         return self.scores[category] -- Already scored
     end

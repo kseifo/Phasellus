@@ -9,8 +9,8 @@ function Dice.new()
 end
 
 -- Setters and Getters
-function Dice:setValue(value)
-    self.value = value
+function Dice:setValue(val)
+    self.value = val
 end
 
 function Dice:getValue()
