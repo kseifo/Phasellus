@@ -16,7 +16,7 @@ function hand.new()
     return self
 end
 
-function hand:reroll()
+function hand:rerollDice()
     for _, die in ipairs(self.reroll) do
         die:roll()
     end
@@ -44,6 +44,14 @@ function hand:sumAllDice()
         total = total + die:getValue()
     end
     return total
+end
+
+function hand:getRerollDice()
+    return self.reroll
+end
+
+function hand:getHeldDice()
+    return self.hold
 end
 
 function hand:moveToReroll(index)
