@@ -54,18 +54,44 @@ function hand:getHeldDice()
     return self.hold
 end
 
-function hand:moveToReroll(index)
-    if index >= 1 and index <= #self.hold then
-        local die = table.remove(self.hold, index)
-        table.insert(self.reroll, die)
+function hand:moveToReroll(die)
+    for i, heldDie in ipairs(self.hold) do
+        if heldDie == die then
+            table.remove(self.hold, i)
+            table.insert(self.reroll, die)
+            return true -- Successfully moved
+        end
     end
+    return false -- Die not found in hold
 end
 
-function hand:moveToHold(index)
-    if index >= 1 and index <= #self.reroll then
-        local die = table.remove(self.reroll, index)
-        table.insert(self.hold, die)
+function hand:moveToHold(die)
+    for i, rerollDie in ipairs(self.reroll) do
+        if rerollDie == die then
+            table.remove(self.reroll, i)
+            table.insert(self.hold, die)
+            return true -- Successfully moved
+        end
     end
+    return false -- Die not found in reroll
+end
+
+function hand:isDieHeld(die)
+    for _, heldDie in ipairs(self.hold) do
+        if heldDie == die then
+            return true
+        end
+    end
+    return false
+end
+
+function hand:isDieInReroll(die)
+    for _, rerollDie in ipairs(self.reroll) do
+        if rerollDie == die then
+            return true
+        end
+    end
+    return false
 end
 
 return hand
