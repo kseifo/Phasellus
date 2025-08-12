@@ -26,9 +26,13 @@ function love.load()
 end
 
 local function rollDice()
-    if hand then
-        hand:rerollDice()
+    if not hand then return end
+    numRerolls = numRerolls - 1
+    if numRerolls < 0 then
+        print("No rerolls left!")
+        return
     end
+    hand:rerollDice()
 end
 
 local function changeDiePos(die, newX, newY)
