@@ -2,23 +2,27 @@ package.path = "src/?.lua;" .. package.path
 
 local Hand = require("hand")
 local hand = nil
+local allDice = nil
 
 local diceCoordinates = {}
 local dice = love.graphics.newImage("/assets/die1.png")
 local rollButton = {x = 50, y = 300, width = 100, height = 40}
 local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Bonus", "3 of a Kind", "4 of a Kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance"}
 
+local numRerolls = 0
+
 function love.load()
     math.randomseed(os.time())
     local font = love.graphics.newFont(16)
     love.graphics.setFont(font)
     hand = Hand.new()
-    local allDice = hand:getAllDice()
-
+    allDice = hand:getAllDice()
 
     for i, dice in ipairs(allDice) do
         diceCoordinates[dice] = {50 + (i - 1) * 70, 130} -- Set initial coordinates for each die
     end
+
+    numRerolls = 3
 end
 
 local function rollDice()
@@ -54,10 +58,8 @@ local function moveDie(die)
     
     if hand:isDieHeld(die) then
         hand:moveToReroll(die)
-        print("Moved die to reroll")
     else
         hand:moveToHold(die)
-        print("Moved die to hold")
     end
     
     -- Fix all dice positions 
@@ -67,7 +69,6 @@ end
 
 function love.draw()
     if not hand then return end
-    local allDice = hand:getAllDice()
     for _, die in ipairs(allDice) do
         love.graphics.rectangle("line", diceCoordinates[die][1], diceCoordinates[die][2], 50, 50)
         love.graphics.printf(die:getValue(), diceCoordinates[die][1], diceCoordinates[die][2] + 15, 50, "center")
@@ -90,8 +91,6 @@ function love.mousepressed(x, y, button)
 
         for die, coords in pairs(diceCoordinates) do
             if x > coords[1] and x < coords[1] + 50 and y > coords[2] and y < coords[2] + 50 then
-                if not hand then return end
-                print("Clicked on die with value: " .. die:getValue())
                 moveDie(die)
                 break
             end
