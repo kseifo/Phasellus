@@ -1,13 +1,15 @@
 package.path = "src/?.lua;" .. package.path
 
 local Hand = require("hand")
+local Scoresheet = require("scoresheet")
+
 local hand = nil
 local allDice = nil
 
 local diceCoordinates = {}
 local dice = love.graphics.newImage("/assets/die1.png")
 local rollButton = {x = 50, y = 300, width = 100, height = 40}
-local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Bonus", "3 of a Kind", "4 of a Kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance"}
+local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "3 of a Kind", "4 of a Kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance"}
 
 local numRerolls = 0
 
@@ -27,12 +29,10 @@ end
 
 local function rollDice()
     if not hand then return end
-    numRerolls = numRerolls - 1
-    if numRerolls < 0 then
-        print("No rerolls left!")
-        return
+    if numRerolls > 0 then
+        numRerolls = numRerolls - 1
+        hand:rerollDice()
     end
-    hand:rerollDice()
 end
 
 local function changeDiePos(die, newX, newY)
@@ -83,6 +83,13 @@ function love.draw()
 
     for i, name in ipairs(categories) do
         love.graphics.printf(name, 500, 50 + (i - 1) * 40, 200, "left")
+        love.graphics.printf(Scoresheet:calculateScore(hand, name), 550, 50 + (i - 1) * 40, 200, "right")
+    end
+
+    love.graphics.printf("Rerolls left: " .. numRerolls, 50, 370, 200, "left")
+
+    if numRerolls == 0 then
+        love.graphics.printf("No rerolls left!", 50, 400, 200, "left")
     end
 end
 

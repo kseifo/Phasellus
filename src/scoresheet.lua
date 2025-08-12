@@ -144,6 +144,38 @@ function Scoresheet:setScore(hand, category)
     return self.scores[category]
 end
 
+function Scoresheet:calculateScore(hand, category)
+    if category == "Ones" then
+        return self:calculateMultiples(hand, 1)
+    elseif category == "Twos" then
+        return self:calculateMultiples(hand, 2)
+    elseif category == "Threes" then
+        return self:calculateMultiples(hand, 3)
+    elseif category == "Fours" then
+        return self:calculateMultiples(hand, 4)
+    elseif category == "Fives" then
+        return self:calculateMultiples(hand, 5)
+    elseif category == "Sixes" then
+        return self:calculateMultiples(hand, 6)
+    elseif category == "3 of a Kind" then
+        return self:hasNofAKind(hand, 3)
+    elseif category == "4 of a Kind" then
+        return self:hasNofAKind(hand, 4)
+    elseif category == "Full House" then
+        return self:hasFullHouse(hand)
+    elseif category == "Small Straight" then
+        return self:hasStraight(hand, 4)
+    elseif category == "Large Straight" then
+        return self:hasStraight(hand, 5)
+    elseif category == "Yahtzee" then
+        return self:hasNofAKind(hand, 5)
+    elseif category == "Chance" then
+        return self:calculateChance(hand)
+    end
+
+    return false -- Invalid category
+end
+
 function Scoresheet:getTotalScore()
     local total = 0
     for _, value in pairs(self.scores) do
