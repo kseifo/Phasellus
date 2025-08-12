@@ -6,11 +6,11 @@ local hand = nil
 local diceCoordinates = {}
 local dice = love.graphics.newImage("/assets/die1.png")
 local rollButton = {x = 50, y = 300, width = 100, height = 40}
-local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes"}
+local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Bonus", "3 of a Kind", "4 of a Kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance"}
 
 function love.load()
     math.randomseed(os.time())
-    local font = love.graphics.newFont(24)
+    local font = love.graphics.newFont(16)
     love.graphics.setFont(font)
     hand = Hand.new()
     local allDice = hand:getAllDice()
@@ -18,11 +18,6 @@ function love.load()
 
     for i, dice in ipairs(allDice) do
         diceCoordinates[dice] = {50 + (i - 1) * 70, 130} -- Set initial coordinates for each die
-    end
-
-    for k, v in ipairs(diceCoordinates) do
-        print(k, v[1])
-        print(k, v[2])
     end
 end
 
@@ -32,9 +27,26 @@ local function rollDice()
     end
 end
 
-local function changeDieY(die, newY)
+local function changeDiePos(die, newX, newY)
     if not diceCoordinates[die] then return end
+    diceCoordinates[die][1] = newX
     diceCoordinates[die][2] = newY
+end
+
+local function fixHeldDicePositions()
+    if not hand then return end
+    local heldDice = hand:getHeldDice()
+    for i, die in ipairs(heldDice) do
+        changeDiePos(die, 50 + (i - 1) * 70, 40)
+    end
+end
+
+local function fixRerollDicePositions()
+    if not hand then return end
+    local rerollDice = hand:getRerollDice()
+    for i, die in ipairs(rerollDice) do
+        changeDiePos(die, 50 + (i - 1) * 70, 130)
+    end
 end
 
 local function moveDie(die)
@@ -42,25 +54,21 @@ local function moveDie(die)
     
     if hand:isDieHeld(die) then
         hand:moveToReroll(die)
-        changeDieY(die, 130) -- Reset Y position for reroll dice
         print("Moved die to reroll")
     else
-        -- Die must be in reroll dice
         hand:moveToHold(die)
-        changeDieY(die, 40) -- Move to held position
         print("Moved die to hold")
     end
+    
+    -- Fix all dice positions 
+    fixHeldDicePositions()
+    fixRerollDicePositions()
 end
 
 function love.draw()
     if not hand then return end
-    local heldDice = hand:getHeldDice()
-    for _, die in ipairs(heldDice) do
-        love.graphics.draw(dice, diceCoordinates[die][1], diceCoordinates[die][2])
-    end
-
-    local rrdice = hand:getRerollDice()
-    for _, die in ipairs(rrdice) do
+    local allDice = hand:getAllDice()
+    for _, die in ipairs(allDice) do
         love.graphics.rectangle("line", diceCoordinates[die][1], diceCoordinates[die][2], 50, 50)
         love.graphics.printf(die:getValue(), diceCoordinates[die][1], diceCoordinates[die][2] + 15, 50, "center")
     end
@@ -85,6 +93,7 @@ function love.mousepressed(x, y, button)
                 if not hand then return end
                 print("Clicked on die with value: " .. die:getValue())
                 moveDie(die)
+                break
             end
         end
     end
