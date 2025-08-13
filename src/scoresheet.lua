@@ -1,12 +1,20 @@
 local Scoresheet = {}
 Scoresheet.__index = Scoresheet
 
+local categories = {
+  "Ones","Twos","Threes","Fours","Fives","Sixes",
+  "3 of a Kind","4 of a Kind","Full House",
+  "Small Straight","Large Straight","Yahtzee","Chance","Bonus"
+}
+
 -- Constructor
 function Scoresheet.new()
     local self = setmetatable({}, Scoresheet)
-    self.scores = {["Ones"] = nil, ["Twos"] = nil, ["Threes"] = nil, ["Fours"] = nil, ["Fives"] = nil, ["Sixes"] = nil,
-                   ["Three of a Kind"] = nil, ["Four of a Kind"] = nil, ["Full House"] = nil,
-                   ["Small Straight"] = nil, ["Large Straight"] = nil, ["Yahtzee"] = nil, ["Chance"] = nil}
+    self.scores = {}
+    for _, category in ipairs(categories) do
+        self.scores[category] = nil
+    end
+    print("scores size: " .. #self.scores)
     return self
 end
 
@@ -16,6 +24,14 @@ function Scoresheet:sumDice(dice)
         total = total + die:getValue()
     end
     return total
+end
+
+function Scoresheet:numsScored()
+    if self.scores["Ones"] and self.scores["Twos"] and self.scores["Threes"] and
+       self.scores["Fours"] and self.scores["Fives"] and self.scores["Sixes"] then
+        return true
+    end
+    return false
 end
 
 -- Calculate the score for ones to sixes
@@ -112,6 +128,14 @@ function Scoresheet:calculateChance(dice)
     return self:sumDice(dice)
 end
 
+function Scoresheet:bonusReached()
+    if self:numsScored() then
+        local total = self.scores["Ones"] + self.scores["Twos"] + self.scores["Threes"] + self.scores["Fours"] + self.scores["Fives"] + self.scores["Sixes"]
+        return total >= 63 and 35 or 0
+    end
+    return 0
+end
+
 function Scoresheet:setScore(dice, category)
     if self.scores[category] ~= nil then
         return self.scores[category] -- Already scored
@@ -129,10 +153,10 @@ function Scoresheet:setScore(dice, category)
         self.scores["Fives"] = self:calculateMultiples(dice, 5)
     elseif category == "Sixes" then
         self.scores["Sixes"] = self:calculateMultiples(dice, 6)
-    elseif category == "Three of a Kind" then
-        self.scores["Three of a Kind"] = self:hasNofAKind(dice, 3)
-    elseif category == "Four of a Kind" then
-        self.scores["Four of a Kind"] = self:hasNofAKind(dice, 4)
+    elseif category == "3 of a Kind" then
+        self.scores["3 of a Kind"] = self:hasNofAKind(dice, 3)
+    elseif category == "4 of a Kind" then
+        self.scores["4 of a Kind"] = self:hasNofAKind(dice, 4)
     elseif category == "Full House" then
         self.scores["Full House"] = self:hasFullHouse(dice)
     elseif category == "Small Straight" then
@@ -143,6 +167,8 @@ function Scoresheet:setScore(dice, category)
         self.scores["Yahtzee"] = self:hasNofAKind(dice, 5)
     elseif category == "Chance" then
         self.scores["Chance"] = self:calculateChance(dice)
+    elseif category == "Bonus" then
+        self.scores["Bonus"] = self:bonusReached()
     end
 
     return self.scores[category]
@@ -175,18 +201,64 @@ function Scoresheet:calculateScore(dice, category)
         return self:hasNofAKind(dice, 5)
     elseif category == "Chance" then
         return self:calculateChance(dice)
+    elseif category == "Bonus" then
+        return self:bonusReached()
     end
 
-    return false -- Invalid category
+    return 0 -- Invalid category
+end
+
+function Scoresheet:getScore(category)
+    if category == "Ones" then
+        return self.scores["Ones"] or 0
+    elseif category == "Twos" then
+        return self.scores["Twos"] or 0
+    elseif category == "Threes" then
+        return self.scores["Threes"] or 0
+    elseif category == "Fours" then
+        return self.scores["Fours"] or 0
+    elseif category == "Fives" then
+        return self.scores["Fives"] or 0
+    elseif category == "Sixes" then
+        return self.scores["Sixes"] or 0
+    elseif category == "3 of a Kind" then
+        return self.scores["3 of a Kind"] or 0
+    elseif category == "4 of a Kind" then
+        return self.scores["4 of a Kind"] or 0
+    elseif category == "Full House" then
+        return self.scores["Full House"] or 0
+    elseif category == "Small Straight" then
+        return self.scores["Small Straight"] or 0
+    elseif category == "Large Straight" then
+        return self.scores["Large Straight"] or 0
+    elseif category == "Yahtzee" then
+        return self.scores["Yahtzee"] or 0
+    elseif category == "Chance" then
+        return self.scores["Chance"] or 0
+    elseif category == "Bonus" then
+        return self.scores["Bonus"] or 0
+    end
+
+    return 0 -- Invalid category
 end
 
 function Scoresheet:getTotalScore()
     local total = 0
-    for _, value in pairs(self.scores) do
-        if value then
-            total = total + value
+    for _, category in ipairs(categories) do
+        if self.scores[category] then
+            total = total + self.scores[category]
         end
     end
     return total
 end
+
+function Scoresheet:isSheetCompleted()
+    for _, category in ipairs(categories) do
+        if self.scores[category] == nil then
+            return false -- At least one category is not scored
+        end
+    end
+    return true -- All categories are scored
+end
+
 return Scoresheet
