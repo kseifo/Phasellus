@@ -83,7 +83,7 @@ function love.draw()
 
     for i, name in ipairs(categories) do
         love.graphics.printf(name, 500, 50 + (i - 1) * 40, 200, "left")
-        love.graphics.printf(Scoresheet:calculateScore(hand, name), 550, 50 + (i - 1) * 40, 200, "right")
+        love.graphics.printf(Scoresheet:calculateScore(allDice, name), 550, 50 + (i - 1) * 40, 200, "right")
     end
 
     love.graphics.printf("Rerolls left: " .. numRerolls, 50, 370, 200, "left")

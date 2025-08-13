@@ -10,9 +10,16 @@ function Scoresheet.new()
     return self
 end
 
+function Scoresheet:sumDice(dice)
+    local total = 0
+    for _, die in ipairs(dice) do
+        total = total + die:getValue()
+    end
+    return total
+end
+
 -- Calculate the score for ones to sixes
-function Scoresheet:calculateMultiples(hand, face)
-    local dice = hand:getAllDice()
+function Scoresheet:calculateMultiples(dice, face)
     local count = 0
 
     for _, die in ipairs(dice) do
@@ -25,8 +32,7 @@ function Scoresheet:calculateMultiples(hand, face)
 end
 
 -- Checking for a 3 of a kind, 4 of a kind, or Yahtzee
-function Scoresheet:hasNofAKind(hand, n)
-    local dice = hand:getAllDice()
+function Scoresheet:hasNofAKind(dice, n)
     local count = {}
 
     for _, die in ipairs(dice) do
@@ -39,15 +45,14 @@ function Scoresheet:hasNofAKind(hand, n)
             return 50
         end
         if v >= n then
-            return hand:sumAllDice()
+            return self:sumDice(dice)
         end
     end
     return 0
 end
 
 -- Checking for a full house
-function Scoresheet:hasFullHouse(hand)
-    local dice = hand:getAllDice()
+function Scoresheet:hasFullHouse(dice)
     local count = {}
 
     for _, die in ipairs(dice) do
@@ -70,8 +75,7 @@ function Scoresheet:hasFullHouse(hand)
 end
 
 -- Calculating the score for small and large straights
-function Scoresheet:hasStraight(hand, length)
-    local dice = hand:getAllDice()
+function Scoresheet:hasStraight(dice, length)
     local uniqueValues = {}
 
     for _, die in ipairs(dice) do
@@ -104,73 +108,73 @@ function Scoresheet:hasStraight(hand, length)
 end
 
 -- Calculating the score for Chance (the sum of all dice)
-function Scoresheet:calculateChance(hand)
-    return hand:sumAllDice()
+function Scoresheet:calculateChance(dice)
+    return self:sumDice(dice)
 end
 
-function Scoresheet:setScore(hand, category)
+function Scoresheet:setScore(dice, category)
     if self.scores[category] ~= nil then
         return self.scores[category] -- Already scored
     end
 
     if category == "Ones" then
-        self.scores["Ones"] = self:calculateMultiples(hand, 1)
+        self.scores["Ones"] = self:calculateMultiples(dice, 1)
     elseif category == "Twos" then
-        self.scores["Twos"] = self:calculateMultiples(hand, 2)
+        self.scores["Twos"] = self:calculateMultiples(dice, 2)
     elseif category == "Threes" then
-        self.scores["Threes"] = self:calculateMultiples(hand, 3)
+        self.scores["Threes"] = self:calculateMultiples(dice, 3)
     elseif category == "Fours" then
-        self.scores["Fours"] = self:calculateMultiples(hand, 4)
+        self.scores["Fours"] = self:calculateMultiples(dice, 4)
     elseif category == "Fives" then
-        self.scores["Fives"] = self:calculateMultiples(hand, 5)
+        self.scores["Fives"] = self:calculateMultiples(dice, 5)
     elseif category == "Sixes" then
-        self.scores["Sixes"] = self:calculateMultiples(hand, 6)
+        self.scores["Sixes"] = self:calculateMultiples(dice, 6)
     elseif category == "Three of a Kind" then
-        self.scores["Three of a Kind"] = self:hasNofAKind(hand, 3)
+        self.scores["Three of a Kind"] = self:hasNofAKind(dice, 3)
     elseif category == "Four of a Kind" then
-        self.scores["Four of a Kind"] = self:hasNofAKind(hand, 4)
+        self.scores["Four of a Kind"] = self:hasNofAKind(dice, 4)
     elseif category == "Full House" then
-        self.scores["Full House"] = self:hasFullHouse(hand)
+        self.scores["Full House"] = self:hasFullHouse(dice)
     elseif category == "Small Straight" then
-        self.scores["Small Straight"] = self:hasStraight(hand, 4)
+        self.scores["Small Straight"] = self:hasStraight(dice, 4)
     elseif category == "Large Straight" then
-        self.scores["Large Straight"] = self:hasStraight(hand, 5)
+        self.scores["Large Straight"] = self:hasStraight(dice, 5)
     elseif category == "Yahtzee" then
-        self.scores["Yahtzee"] = self:hasNofAKind(hand, 5)
+        self.scores["Yahtzee"] = self:hasNofAKind(dice, 5)
     elseif category == "Chance" then
-        self.scores["Chance"] = self:calculateChance(hand)
+        self.scores["Chance"] = self:calculateChance(dice)
     end
 
     return self.scores[category]
 end
 
-function Scoresheet:calculateScore(hand, category)
+function Scoresheet:calculateScore(dice, category)
     if category == "Ones" then
-        return self:calculateMultiples(hand, 1)
+        return self:calculateMultiples(dice, 1)
     elseif category == "Twos" then
-        return self:calculateMultiples(hand, 2)
+        return self:calculateMultiples(dice, 2)
     elseif category == "Threes" then
-        return self:calculateMultiples(hand, 3)
+        return self:calculateMultiples(dice, 3)
     elseif category == "Fours" then
-        return self:calculateMultiples(hand, 4)
+        return self:calculateMultiples(dice, 4)
     elseif category == "Fives" then
-        return self:calculateMultiples(hand, 5)
+        return self:calculateMultiples(dice, 5)
     elseif category == "Sixes" then
-        return self:calculateMultiples(hand, 6)
+        return self:calculateMultiples(dice, 6)
     elseif category == "3 of a Kind" then
-        return self:hasNofAKind(hand, 3)
+        return self:hasNofAKind(dice, 3)
     elseif category == "4 of a Kind" then
-        return self:hasNofAKind(hand, 4)
+        return self:hasNofAKind(dice, 4)
     elseif category == "Full House" then
-        return self:hasFullHouse(hand)
+        return self:hasFullHouse(dice)
     elseif category == "Small Straight" then
-        return self:hasStraight(hand, 4)
+        return self:hasStraight(dice, 4)
     elseif category == "Large Straight" then
-        return self:hasStraight(hand, 5)
+        return self:hasStraight(dice, 5)
     elseif category == "Yahtzee" then
-        return self:hasNofAKind(hand, 5)
+        return self:hasNofAKind(dice, 5)
     elseif category == "Chance" then
-        return self:calculateChance(hand)
+        return self:calculateChance(dice)
     end
 
     return false -- Invalid category
