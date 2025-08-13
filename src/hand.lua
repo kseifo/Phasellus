@@ -94,4 +94,10 @@ function hand:isDieInReroll(die)
     return false
 end
 
+function hand:resetHand()
+    for i, die in ipairs(self.hold) do
+        self:moveToReroll(die)
+    end
+end
+
 return hand
