@@ -165,6 +165,10 @@ end
 function love.mousepressed(x, y, button)
     if not hand or not sheet then return end
 
+    if x > 500 and y > 290 and y < 330 then
+        return
+    end
+
     if button == 1 then -- left mouse click
         if x > rollButton.x and x < rollButton.x + rollButton.width and
            y > rollButton.y and y < rollButton.y + rollButton.height then
@@ -208,7 +212,7 @@ end
 
 function love.mousemoved(x, y)
     -- Bounds check
-    if x < 500 or x > 750 or y < 50 or y > (50 + (#categories - 1) * 40 + 30) then
+    if x < 500 or x > 750 or y < 50 or y > (50 + (#categories - 1) * 40 + 30) or (y>=290 and y<=330) then
         hoveredCategory = nil
         return
     end
