@@ -1,6 +1,7 @@
 package.path = "src/?.lua;" .. package.path
 
 local lg = love.graphics
+local lm = love.mouse
 
 local Hand = require("hand")
 local Scoresheet = require("scoresheet")
@@ -27,8 +28,8 @@ local catLocations = {}
 
 local scoredCategories = {}
 
-local handCursor = love.mouse.getSystemCursor("hand")
-local defaultCursor = love.mouse.getSystemCursor("arrow")
+local handCursor = lm.getSystemCursor("hand")
+local defaultCursor = lm.getSystemCursor("arrow")
 
 local numRerolls = 0
 local hoveredCategory = nil
@@ -56,9 +57,9 @@ end
 
 function love.update(dt)
     if hoveredCategory then
-        love.mouse.setCursor(handCursor)
+        lm.setCursor(handCursor)
     else
-        love.mouse.setCursor(defaultCursor)
+        lm.setCursor(defaultCursor)
     end
 end
 

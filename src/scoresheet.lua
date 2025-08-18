@@ -11,10 +11,11 @@ local categories = {
 function Scoresheet.new()
     local self = setmetatable({}, Scoresheet)
     self.scores = {}
+    
     for _, category in ipairs(categories) do
         self.scores[category] = nil
     end
-    print("scores size: " .. #self.scores)
+
     return self
 end
 
