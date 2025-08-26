@@ -21,12 +21,15 @@ local d6 = lg.newImage("/assets/die6.png")
 
 local diceImages = {[1] = d1, [2] = d2, [3] = d3, [4] = d4, [5] = d5, [6] = d6}
 
-local rollButton = {x = 50, y = 300, width = 100, height = 40}
+local RollButtonUI = require("ui.rollbutton")
+local EndScreenUI = require("ui.endScreen")
+local HudUI = require("ui.hud")
+local CategoryUI = require("ui.categoriesTable")
 
 local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Bonus", "3 of a Kind", "4 of a Kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance"}
-local catLocations = {}
 
 local scoredCategories = {}
+local currentSheet = {}
 
 local handCursor = lm.getSystemCursor("hand")
 local defaultCursor = lm.getSystemCursor("arrow")
@@ -34,7 +37,11 @@ local defaultCursor = lm.getSystemCursor("arrow")
 local numRerolls = 0
 local hoveredCategory = nil
 
+local isSheetCompleted = false
+local totalScore = 0
+
 function love.load()
+    love.window.setMode(1280, 720, {resizable=false, fullscreen=false})
     math.randomseed(os.time())
     local font = lg.newFont(16)
     lg.setFont(font)
@@ -48,8 +55,8 @@ function love.load()
     end
 
     for i, name in ipairs(categories) do
-        local y = 50 + (i - 1) * 40
-        catLocations[i] = { x = 500, y = y, w = 250, h = 30, name = name }
+        local y = CategoryUI.catY + (i - 1) * CategoryUI.catYSpacing
+        currentSheet[name] = sheet:calculateScore(allDice, name)
     end
 
     numRerolls = 2
@@ -65,10 +72,16 @@ end
 
 
 local function rollDice()
-    if not hand then return end
+    if not hand or not sheet then return end
+
     if numRerolls > 0 then
         numRerolls = numRerolls - 1
         hand:rerollDice()
+        
+        -- Update scores AFTER rerolling the dice
+        for _, name in ipairs(categories) do
+            currentSheet[name] = sheet:calculateScore(allDice, name)
+        end
     end
 end
 
@@ -112,14 +125,8 @@ function love.draw()
     if not hand or not sheet then return end
     
     -- End screen
-    if sheet:isSheetCompleted()==true then
-        love.graphics.printf("Game Over! Total Score: " .. sheet:getTotalScore(), 100, 200, 700, "left")
-        for i, name in ipairs(categories) do
-            local categoryY = 50 + (i - 1) * 40
-
-            lg.printf(name, 500, categoryY, 200, "left")
-            lg.printf(sheet:getScore(name), 550, categoryY, 200, "right")
-        end
+    if isSheetCompleted == true then
+        EndScreenUI.draw(sheet, categories)
         return
     end
 
@@ -128,66 +135,30 @@ function love.draw()
         lg.draw(diceImages[die:getValue()], diceCoordinates[die][1], diceCoordinates[die][2])
     end
 
-    -- Roll button 
-    lg.rectangle("line", rollButton.x, rollButton.y, rollButton.width, rollButton.height)
-    lg.printf("Roll", rollButton.x, rollButton.y + 10, rollButton.width, "center")
+    RollButtonUI.draw()
 
-    for i, loc in ipairs(catLocations) do
-         
-        -- Draw hover background if this category is being hovered
-        if hoveredCategory == i and loc.name~="Bonus" then
-            lg.setColor(0.3, 0.3, 0.3, 0.5)
-            lg.rectangle("fill", loc.x, loc.y, loc.w, loc.h)
-        end
+    CategoryUI.draw(hoveredCategory, currentSheet, scoredCategories, sheet)
 
-        -- White category name
-        lg.setColor(1, 1, 1)
-        lg.printf(loc.name, loc.x, loc.y, 200, "left")
-
-        -- Calculate and display the score for each category(except Bonus, thats only when ones twos... are scored)
-        if sheet:numsScored() or loc.name ~= "Bonus" then
-
-            lg.setColor(0.5, 0.5, 0.5)
-
-            local currentScore = sheet:calculateScore(allDice, loc.name)
-
-            if scoredCategories[loc.name] then
-                lg.setColor(1,1,1)
-                currentScore = scoredCategories[loc.name]
-            end
-
-            lg.printf(currentScore, loc.x + 50, loc.y, 200, "right")
-        end
-    end
-    lg.setColor(1, 1, 1)
-
-    lg.printf("Rerolls left: " .. numRerolls, 50, 370, 200, "left")
-
-    if numRerolls == 0 then
-        lg.printf("No rerolls left!", 50, 400, 200, "left")
-    end
-
-    lg.printf("Total Score: " .. sheet:getTotalScore(), 50, 430, 200, "left")
+    HudUI.draw(numRerolls, totalScore)
 end
 
 function love.mousepressed(x, y, button)
     if not hand or not sheet then return end
 
-    if x > 500 and y > 290 and y < 330 then
+    if x > CategoryUI.catX and y > CategoryUI.bonusY and y < (CategoryUI.bonusY+45) then
         return
     end
 
     if button == 1 then -- left mouse click
-        if x > rollButton.x and x < rollButton.x + rollButton.width and
-           y > rollButton.y and y < rollButton.y + rollButton.height then
+        if RollButtonUI.hit(x, y) then
             rollDice()
         end
 
         -- Check for clicks on score categories
         for i, name in ipairs(categories) do
-            local categoryY = 50 + (i - 1) * 40
+            local categoryY = CategoryUI.catY + (i - 1) * 45
 
-            if x >= 500 and x <= 750 and y >= categoryY and y <= categoryY + 30 then
+            if x >= CategoryUI.catX and x <= (CategoryUI.catX+250) and y >= categoryY and y <= categoryY + 30 then
                 local score = sheet:calculateScore(allDice, name)
                 sheet:setScore(allDice, name)
                 numRerolls = 3 -- Reset rerolls after scoring
@@ -203,6 +174,8 @@ function love.mousepressed(x, y, button)
                 end
                 fixRerollDicePositions()
                 rollDice()
+                isSheetCompleted = sheet:isSheetCompleted()
+                totalScore = sheet:getTotalScore()
                 break
             end
         end
@@ -219,17 +192,17 @@ end
 
 function love.mousemoved(x, y)
     -- Bounds check
-    if x < 500 or x > 750 or y < 50 or y > (50 + (#categories - 1) * 40 + 30) or (y>=290 and y<=330) then
+    if x < 950 or x > 1200 or y < 50 or y > (50 + (#categories - 1) * 45 + 30) or (y>=320 and y<=365) then
         hoveredCategory = nil
         return
     end
 
     local relativeY = y - 50
-    local categoryIndex = math.floor(relativeY / 40) + 1
+    local categoryIndex = math.floor(relativeY / 45) + 1
     
     -- Verify if the category index is valid
     if categoryIndex >= 1 and categoryIndex <= #categories then
-        local categoryY = 50 + (categoryIndex - 1) * 40
+        local categoryY = 50 + (categoryIndex - 1) * 45
         if y >= categoryY and y <= categoryY + 30 then
             hoveredCategory = categoryIndex
         else
