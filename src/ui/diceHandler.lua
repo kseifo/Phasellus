@@ -1,14 +1,7 @@
 local DiceHandler = {}
 DiceHandler.__index = DiceHandler
 local lg = love.graphics
-local diceImages = {}
-for i = 1, 6 do
-    diceImages[i] = lg.newImage("/assets/die" .. i .. ".png")
-end
 
-function DiceHandler.getDiceImage(value)
-    return diceImages[value]
-end
 
 function DiceHandler.new(hand)
     local self = setmetatable({
@@ -17,6 +10,7 @@ function DiceHandler.new(hand)
         dieW = 50, dieH = 50,
         heldY = 40, rerollY = 130,
         startX = 50, stepX = 70,
+        diceImages = {},
     }, DiceHandler)
 
     local allDice = hand:getAllDice()
@@ -24,7 +18,15 @@ function DiceHandler.new(hand)
         self.coordinates[die] = { self.startX + (i - 1) * self.stepX, self.rerollY }
     end
 
+    for i = 1, 6 do
+        self.diceImages[i] = lg.newImage("assets/die" .. i .. ".png")
+    end
+
     return self
+end
+
+function DiceHandler:getDiceImage(value)
+    return self.diceImages[value]
 end
 
 function DiceHandler:getCoordinates()

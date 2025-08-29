@@ -37,8 +37,8 @@ function love.load()
     sheet = Scoresheet.new()
 
     diceHandler = DiceHandler.new(hand)
-
-    for i, name in ipairs(categories) do
+    diceUI.new(diceHandler)
+    for _, name in ipairs(categories) do
         currentSheet[name] = sheet:calculateScore(allDice, name)
     end
 
@@ -77,9 +77,7 @@ function love.draw()
         return
     end
 
-    -- Draw dice using coordinates from the handler
-    diceUI.draw(diceHandler:getCoordinates(), allDice)
-
+    diceUI.draw(allDice)
     RollButtonUI.draw()
     CategoryUI.draw(hoveredCategory, currentSheet, scoredCategories, sheet)
     HudUI.draw(numRerolls, totalScore)
