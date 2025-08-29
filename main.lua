@@ -5,29 +5,22 @@ local lm = love.mouse
 
 local Hand = require("hand")
 local Scoresheet = require("scoresheet")
-local sheet = nil
 
+local sheet = nil
 local hand = nil
 local allDice = nil
 
 local diceCoordinates = {}
 
-local d1 = lg.newImage("/assets/die1.png")
-local d2 = lg.newImage("/assets/die2.png")
-local d3 = lg.newImage("/assets/die3.png")
-local d4 = lg.newImage("/assets/die4.png")
-local d5 = lg.newImage("/assets/die5.png")
-local d6 = lg.newImage("/assets/die6.png")
-
-local diceImages = {[1] = d1, [2] = d2, [3] = d3, [4] = d4, [5] = d5, [6] = d6}
-
 local RollButtonUI = require("ui.rollbutton")
 local EndScreenUI = require("ui.endScreen")
 local HudUI = require("ui.hud")
 local CategoryUI = require("ui.categoriesTable")
+local DiceHandler = require("ui.diceHandler")
+local BoardUI = require("ui.boardUI")
+local diceUI = require("ui.diceUI")
 
 local categories = {"Ones", "Twos", "Threes", "Fours", "Fives", "Sixes", "Bonus", "3 of a Kind", "4 of a Kind", "Full House", "Small Straight", "Large Straight", "Yahtzee", "Chance"}
-
 local scoredCategories = {}
 local currentSheet = {}
 
@@ -55,7 +48,6 @@ function love.load()
     end
 
     for i, name in ipairs(categories) do
-        local y = CategoryUI.catY + (i - 1) * CategoryUI.catYSpacing
         currentSheet[name] = sheet:calculateScore(allDice, name)
     end
 
@@ -78,7 +70,6 @@ local function rollDice()
         numRerolls = numRerolls - 1
         hand:rerollDice()
         
-        -- Update scores AFTER rerolling the dice
         for _, name in ipairs(categories) do
             currentSheet[name] = sheet:calculateScore(allDice, name)
         end
@@ -130,10 +121,7 @@ function love.draw()
         return
     end
 
-    -- Draw dice
-    for _, die in ipairs(allDice) do
-        lg.draw(diceImages[die:getValue()], diceCoordinates[die][1], diceCoordinates[die][2])
-    end
+    diceUI.draw(diceCoordinates, allDice)
 
     RollButtonUI.draw()
 
